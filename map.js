@@ -8,7 +8,7 @@ module.exports = function(tileLayers, tile, writeData, done) {
   var highways = {};
   var bboxes = [];
   var majorRoads = {
-    'motorway': true,
+    'motorway': false,
     'trunk': true,
     'primary': true,
     'secondary': true,
@@ -57,11 +57,14 @@ module.exports = function(tileLayers, tile, writeData, done) {
     for (var k = 0; k < overlaps.length; k++) {
       var overlap = overlaps[k];
       if (bbox.osm_way_id !== overlap.osm_way_id) {
-        var intersectPoint = turf.intersect(highways[overlap.osm_way_id], highways[bbox.osm_way_id]);
-        if (intersectPoint !== undefined && (intersectPoint.geometry.type === 'Point' || intersectPoint.geometry.type === 'MultiPoint')) {
-          output.features = output.features.concat(intersectPoint);
-          //output.push(JSON.stringify(intersectPoint) + ',');
-          //console.log(JSON.stringify(intersectPoint) + ',');
+        // get intersections for only major-major or major-minor roads.
+        if (majorRoads[highways[overlap.osm_way_id].properties.highways] || majorRoads[highways[bbox.osm_way_id].properties.highways]) {
+          var intersectPoint = turf.intersect(highways[overlap.osm_way_id], highways[bbox.osm_way_id]);
+          if (intersectPoint !== undefined && (intersectPoint.geometry.type === 'Point' || intersectPoint.geometry.type === 'MultiPoint')) {
+            output.features = output.features.concat(intersectPoint);
+            //output.push(JSON.stringify(intersectPoint) + ',');
+            //console.log(JSON.stringify(intersectPoint) + ',');
+          }
         }
       }
     }
